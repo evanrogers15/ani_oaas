@@ -23,8 +23,8 @@ WORKDIR /
 COPY initial/ /initial/
 
 # Make the scripts executable
-RUN chmod +x /initial/env_setup.sh && \
-    chmod +x /initial/api_scrape.sh &&
+RUN chmod +x initial/env_setup.sh && \
+    chmod +x initial/api_scrape.sh &&
 
 # Define the default command to run when the container starts
 CMD ["/bin/bash"]
