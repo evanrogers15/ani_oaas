@@ -76,7 +76,7 @@ read -p "Enter the Customer's AppNeta URL (default: app-01.pm.appneta.com): " ap
 if [ -z "$appNeta_URL" ]; then
   appNeta_URL="app-01.pm.appneta.com"
 fi
-echo "2fa540be32054d20b1310c3123f72c18"
+
 # Prompt the user for the AppNeta token
 read -p "Enter the AppNeta token (default: none): " appNeta_TOKEN
 appNeta_TOKEN="${appNeta_TOKEN:-none}"
