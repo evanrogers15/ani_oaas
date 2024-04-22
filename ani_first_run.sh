@@ -8,11 +8,11 @@ repository="evanrogers719/ani_oaas"
 
 # Query Docker Hub for the list of images in the repository
 image_tags=$(curl -s "https://hub.docker.com/v2/repositories/$repository/tags" | jq -r '.results | .[].name' | head -n 5)
-
+echo "This utility deploys the ANI OaaS platform for the provided customer, complete the prompts to deploy"
 # User entry for folder name created for use by ANI OaaS Utility
 while true; do
   # Prompt the user for a folder name, with a default value of 'ani_oaas_01'
-  read -p "Enter a customer directory name [ani]: " folder_name
+  read -p "Enter a customer directory name [ani_oaas_01]: " folder_name
 
   # Set the default value for the folder name if the user did not provide any input
   folder_name=${folder_name:-ani_oaas_01}
@@ -83,7 +83,7 @@ appNeta_TOKEN="${appNeta_TOKEN:-none}"
 
 # Prompt the user for the Grafana Web Service Port
 while true; do
-    read -p "Enter the Grafana HTTP port (default: 80)" port
+    read -p "Enter the Grafana HTTP port (default: 80): " port
     ss -tuln | grep ":$port\b" >/dev/null
     if [ $? -eq 0 ]; then
         echo "Port $port is in use. Please choose another port."
@@ -95,7 +95,7 @@ done
 
 # Prompt the user for the Grafana Web Service Port
 while true; do
-    read -p "Enter the InfluxDB HTTP port (default: 8080):" port
+    read -p "Enter the InfluxDB HTTP port (default: 8080): " port
     ss -tuln | grep ":$port\b" >/dev/null
     if [ $? -eq 0 ]; then
         echo "Port $port is in use. Please choose another port."
@@ -140,6 +140,8 @@ services:
     environment:
       - GF_PATHS_CONFIG=/etc/grafana/custom.ini
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=$INFLUX_INIT_TOKEN
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=PW4demosANI!
     ports:
       - $grafana_PORT:3000
     depends_on:
@@ -167,7 +169,7 @@ services:
        # Use these same configurations parameters in your telegraf configuration, mytelegraf.conf.
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=admin
-      - DOCKER_INFLUXDB_INIT_PASSWORD=password
+      - DOCKER_INFLUXDB_INIT_PASSWORD=PW4demosANI!
       - DOCKER_INFLUXDB_INIT_ORG=bsr
       - DOCKER_INFLUXDB_INIT_BUCKET=bsr_bucket
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=$INFLUX_INIT_TOKEN
@@ -227,7 +229,7 @@ unset appNeta_TOKEN
 
 echo "Grafana is now available at http://"$selected_ip":"$grafana_PORT"/"
 echo "Default username: admin"
-echo "Default passowrd: password"
+echo "Default passowrd: PW4demosANI!"
 echo "InfluxDB is now available at http://"$selected_ip":"$influxDB_PORT"/"
 echo "Default username: admin"
-echo "Default password: password"
+echo "Default password: PW4demosANI!"

@@ -31,6 +31,7 @@ if [ "$appneta_token" != "none" ]; then
           path_all=$(curl -s -X GET -H "Authorization: Token ${appneta_token["$l"]}" -H "Accept: application/json" 'https://'${appneta_root_url["$l"]}'/api/v3/path/data')
 
           #path summary variable creation
+          pathOrgId=($(echo "$pathSummary" | jq -r '.[].orgId'))
           pathName=($(echo "$pathSummary" | jq -r '.[].target'))
           pathID=($(echo "$pathSummary" | jq -r '.[].id'))
           path_applianceName=($(echo "$pathSummary" | jq -r '.[].sourceAppliance | gsub(" "; "_")'))
@@ -57,8 +58,10 @@ if [ "$appneta_token" != "none" ]; then
               webPathCount=$(echo "$webPathData" | jq 'map(select(.id)) | length')
               for ((k=0; k<$webPathCount; k++))
               do
+                webPathOrgId=($(echo "$webPathData" | jq -r '.['$k'].orgId'))
                 webPathId=($(echo "$webPathData" | jq -r '.['$k'].id'))
                 applianceName=($(echo "$webPathData" | jq -r '.['$k'].location.applianceName | gsub(" "; "_")'))
+                applianceId=($(echo "$webPathData" | jq -r '.['$k'].location.applianceId'))
                 locationLocality=($(echo "$webPathData" | jq -r '.['$k'].location.location.locality | @sh | sub(" "; "_";"g")' | sed "s/'//g"))
                 locationAdminAreaLevelOne=($(echo "$webPathData" | jq -r '.['$k'].location.location.adminAreaLevelOne | @sh | sub(" "; "_";"g")' | sed "s/'//g"))
                 locationAdminAreaLevelTwo=($(echo "$webPathData" | jq -r '.['$k'].location.location.adminAreaLevelTwo | @sh | sub(" "; "_";"g")' | sed "s/'//g"))
@@ -66,10 +69,9 @@ if [ "$appneta_token" != "none" ]; then
                 userFlowName=($(echo "$webPathData" | jq -r '.['$k'].userFlow.name' |  sed 's/[^a-zA-Z0-9]//g'))
                 webAppName=($(echo "$webPathData" | jq -r '.['$k'].webPathConfig.webAppName | @sh | sub(" "; "_";"g")'))
                 webPathWebAppId=($(echo "$webPathData" | jq -r '.['$k'].webPathConfig.webAppId | @sh | sub(" "; "_";"g")'))
-                webAppName=(${webAppName[@]//\'/}) #remove single quotes from webAppName array objects
+                webAppName=(${webAppName[@]//\'/})
                 webPathId_status=($(echo "$webPathData" | jq -r '.['$k'].statusWithMuted | @sh | sub(" "; "_";"g")')) && webPathId_status=(${webPathId_status[@]//\"/}) && webPathId_status=(${webPathId_status[@]//\'/})
                 webAppTarget=($(echo "$webPathData" | jq -r '.['$k'].target.url | @sh | sub("https://"; "";"g") | sub("http://"; "";"g")')) && webAppTarget=(${webAppTarget[@]//\:*/}) && webAppTarget=(${webAppTarget[@]//\'/}) && webAppTarget=(${webAppTarget[@]//\//})
-
 
               # testwebAppAll=$(curl -s -X GET -H "Authorization: Token ${appT}" -H "Accept: application/json" 'https://'${appURL}'/api/v3/webPath/data')
               # milestone_count=$(echo "$testwebAppAll" | jq --arg webPathId "$webPathId" '.[] | select(.webPathId == ($webPathId | tonumber)) | .milestones | length')
@@ -77,7 +79,9 @@ if [ "$appneta_token" != "none" ]; then
               # milestoneName=($(echo "$webAppSummary" | jq -r '.['"$w"'].userFlow.milestoneDefinitions[].name' | sed "s/'//g" | tr -d '[:space:]'))
 
               webAppAll=$(jq --arg webPathId "$webPathId" \
+                     --arg webPathOrgId "$webPathOrgId" \
                      --arg applianceName "$applianceName" \
+                     --arg applianceId "$applianceId" \
                      --arg webAppName "$webAppName" \
                      --arg userFlowName "$userFlowName" \
                      --arg webAppTarget "$webAppTarget" \
@@ -86,7 +90,7 @@ if [ "$appneta_token" != "none" ]; then
                      --arg adminAreaLevelOne "$locationAdminAreaLevelOne" \
                      --arg adminAreaLevelTwo "$locationAdminAreaLevelTwo" \
                      '
-                map(if .webPathId == ($webPathId | tonumber) then . + {"applianceName": $applianceName, "appName": $webAppName, "userFlowName": $userFlowName, "webUrlTarget": $webAppTarget , "webPathStatus": $webPathId_status, "locality": $locality, "locationAdminAreaLevelOne": $adminAreaLevelOne, "locationAdminAreaLevelTwo": $adminAreaLevelTwo} else . end)
+                map(if .webPathId == ($webPathId | tonumber) then . + {"webPathOrgId": $webPathOrgId, "applianceName": $applianceName, "applianceId": $applianceId,  "appName": $webAppName, "userFlowName": $userFlowName, "webUrlTarget": $webAppTarget , "webPathStatus": $webPathId_status, "locality": $locality, "locationAdminAreaLevelOne": $adminAreaLevelOne, "locationAdminAreaLevelTwo": $adminAreaLevelTwo} else . end)
                 ' <<< "$webAppAll")
             done
           done
@@ -97,6 +101,7 @@ if [ "$appneta_token" != "none" ]; then
 
           for ((p=0; p<$pathName_count; p++))
           do
+              pathOrgId_temp=${pathOrgId[$p]}
               pathName_temp=${pathName[$p]}
               pathStatus_temp=${pathStatus[$p]}
               pathTagCategory_temp=${pathTagCategory[$p]}
@@ -106,6 +111,7 @@ if [ "$appneta_token" != "none" ]; then
               appliance_ispName_temp=${appliance_ispName[$p]}
               appliance_networkType_temp=${appliance_networkType[$p]}
               appliance_vpn_temp=${appliance_vpn[$p]}
+              path_all="$(jq '.['$p'] += {"pathOrgId": "'"$pathOrgId_temp"'"}' <<< "$path_all")"
               path_all="$(jq '.['$p'] += {"applianceName": "'"$path_applianceName_temp"'"}' <<< "$path_all")"
               path_all="$(jq '.['$p'] += {"connectionType": "'"$appliance_connectionType_temp"'"}' <<< "$path_all")"
               path_all="$(jq '.['$p'] += {"ispName": "'"$appliance_ispName_temp"'"}' <<< "$path_all")"
