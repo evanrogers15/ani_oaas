@@ -1,9 +1,8 @@
 #!/bin/bash
-# The intellectual property in this code is owned by Tony Davis and Evan Rogers
+# // Copyright (c) 2024 - Tony Davis and Evan Rogers
 
 #process to pull performance metrics from Appneta API continuously
 
-# Read appneta_token array if appT has a value
 if [ -n "$appT" ]; then
     read -a appneta_token <<< "$appT"
 else
@@ -72,11 +71,6 @@ if [ "$appneta_token" != "none" ]; then
                 webAppName=(${webAppName[@]//\'/})
                 webPathId_status=($(echo "$webPathData" | jq -r '.['$k'].statusWithMuted | @sh | sub(" "; "_";"g")')) && webPathId_status=(${webPathId_status[@]//\"/}) && webPathId_status=(${webPathId_status[@]//\'/})
                 webAppTarget=($(echo "$webPathData" | jq -r '.['$k'].target.url | @sh | sub("https://"; "";"g") | sub("http://"; "";"g")')) && webAppTarget=(${webAppTarget[@]//\:*/}) && webAppTarget=(${webAppTarget[@]//\'/}) && webAppTarget=(${webAppTarget[@]//\//})
-
-              # testwebAppAll=$(curl -s -X GET -H "Authorization: Token ${appT}" -H "Accept: application/json" 'https://'${appURL}'/api/v3/webPath/data')
-              # milestone_count=$(echo "$testwebAppAll" | jq --arg webPathId "$webPathId" '.[] | select(.webPathId == ($webPathId | tonumber)) | .milestones | length')
-              # milestoneName=($(echo "$webAppSummary" | jq -r '.['"$w"'].userFlow.milestoneDefinitions[].name' | sed "s/'//g" | tr -d '[:space:]'))
-              # milestoneName=($(echo "$webAppSummary" | jq -r '.['"$w"'].userFlow.milestoneDefinitions[].name' | sed "s/'//g" | tr -d '[:space:]'))
 
               webAppAll=$(jq --arg webPathId "$webPathId" \
                      --arg webPathOrgId "$webPathOrgId" \
