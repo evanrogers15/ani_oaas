@@ -41,8 +41,6 @@ if [ "$appneta_token" != "none" ]; then
           pathName_count="${#pathName[@]}"
           pathTagCategory=($(echo "$pathSummary" | jq '.[].tags[0].category')) && pathTagCategory=("${pathTagCategory[@]//\"/}")
           pathTagValue=($(echo "$pathSummary" | jq '.[].tags[0].value')) && pathTagValue=("${pathTagValue[@]//\"/}")
-
-          #path status variable creation
           pathStatus=($(echo "$pathStatus" | jq -r '.[].status'))
 
           webAppId=($(echo "$webAppSummary" | jq -r '.[].id'))
@@ -89,7 +87,6 @@ if [ "$appneta_token" != "none" ]; then
             done
           done
           echo "$webAppAll" > /data/webApp_all_"$l".json
-          # echo "$webAppAll" > /data/test_webApp_all_"$l".json
           path_all=$(cat <<< "$(echo "$path_all" | jq 'sort_by(.pathId)')")
           path_all=$(cat <<< "$(echo "$path_all" | jq '.[].data.totalCapacity |= [.[-1]] | .[].data.utilizedCapacity |= [.[-1]] | .[].data.availableCapacity |= [.[-1]] | .[].data.latency |= [.[-1]] | .[].data.dataJitter |= [.[-1]] | .[].data.dataLoss |= [.[-1]] | .[].data.voiceJitter |= [.[-1]] | .[].data.voiceLoss |= [.[-1]] | .[].data.mos |= [.[-1]] | .[].data.rtt |= [.[-1]] | .[].dataInbound.totalCapacity |= [.[-1]] | .[].dataInbound.utilizedCapacity |= [.[-1]] | .[].dataInbound.availableCapacity |= [.[-1]] | .[].dataInbound.dataJitter |= [.[-1]] | .[].dataInbound.dataLoss |= [.[-1]] | .[].dataInbound.voiceJitter |= [.[-1]] | .[].dataInbound.voiceLoss |= [.[-1]] | .[].dataInbound.mos |= [.[-1]] | .[].dataInbound.rtt |= [.[-1]] | .[].dataInbound.latency |= [.[-1]] | .[].dataOutbound.totalCapacity |= [.[-1]] | .[].dataOutbound.utilizedCapacity |= [.[-1]] | .[].dataOutbound.availableCapacity |= [.[-1]] | .[].dataOutbound.dataJitter |= [.[-1]] | .[].dataOutbound.dataLoss |= [.[-1]] | .[].dataOutbound.voiceJitter |= [.[-1]] | .[].dataOutbound.voiceLoss |= [.[-1]] | .[].dataOutbound.mos |= [.[-1]] | .[].dataOutbound.rtt |= [.[-1]] | .[].dataOutbound.latency |= [.[-1]]')")
 
@@ -116,7 +113,6 @@ if [ "$appneta_token" != "none" ]; then
               path_all="$(jq '.['$p'] += {"path_tag_category": "'"$pathTagCategory_temp"'"}' <<< "$path_all")"
               path_all="$(jq '.['$p'] += {"path_tag_value": "'"$pathTagValue_temp"'"}' <<< "$path_all")"
           done
-          # echo "$webAppAll" > /data/webApp_all_"$l".json
           echo "$path_all" > /data/path_all_"$l".json
       done
       bash /initial/influx_bucket_creation.sh
